@@ -5,7 +5,7 @@ const isAuth= async (req, res, next) => {
   const token = req.cookies.token;
   try {
     if (!token) {
-      return res.json("token is required");
+      return res.status(401).json("token is required");
     }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id);

@@ -2,6 +2,8 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../libs/Firebase.googleauth";
 import axios from "axios";
 import { serverUrl } from "../App.jsx";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../Redux/userSlice.js";
 
 function GoogleIcon() {
   return (
@@ -26,27 +28,28 @@ function GoogleIcon() {
   );
 }
 
-const handleGoogleAuth = async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const { displayName, photoURL, email } = result.user;
-
-    const { data } = await axios.post(
-      `${serverUrl}/api/auth/google`,
-      {
-        name: displayName,
-        email,
-        avatar: photoURL,
-      },
-      { withCredentials: true },
-    );
-    console.log(data);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 export default function AuthModal({ open, onclose }) {
+  const dispatch = useDispatch();
+
+  const handleGoogleAuth = async () => {
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const { displayName, photoURL, email } = result.user;
+
+      const { data } = await axios.post(
+        `${serverUrl}/api/auth/google`,
+        {
+          name: displayName,
+          email,
+          avatar: photoURL,
+        },
+        { withCredentials: true },
+      );
+      dispatch(setUserData(data));
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       {open && (
