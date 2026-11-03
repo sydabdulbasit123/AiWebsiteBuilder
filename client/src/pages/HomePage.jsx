@@ -1,8 +1,11 @@
 import { motion } from "motion/react";
 import { useState } from "react";
 import AuthModal from "../components/GoogleAuthForm.jsx";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Coins } from "lucide-react";
+import axios from "axios";
+import { serverUrl } from "../App.jsx";
+import { setUserData } from "../Redux/userSlice.js";
 
 const features = [
   {
@@ -19,7 +22,13 @@ const features = [
   },
 ];
 
-function Navbar({ OnGetStarted, userData, onprofileclick, openprofile }) {
+function Navbar({
+  OnGetStarted,
+  userData,
+  onprofileclick,
+  openprofile,
+  onLogoutClick,
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, y: -40 }}
@@ -71,11 +80,16 @@ function Navbar({ OnGetStarted, userData, onprofileclick, openprofile }) {
               </button>
 
               {openprofile && (
-                <div className="absolute right-0 top-full z-50 mt-2 flex min-w-56 flex-col gap-2 rounded-md border border-white/15 bg-zinc-900 p-3 text-xs shadow-lg">
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute right-0 top-full z-50 mt-2 flex min-w-56 flex-col gap-2 rounded-md border border-white/15 bg-zinc-900 p-3 text-xs shadow-lg"
+                >
                   <span className="font-medium text-sm text-white truncate">
                     {userData.name}
                   </span>
-                  <span className="text-sm text-zinc-400 truncate">{userData.email}</span>
+                  <span className="text-sm text-zinc-400 truncate">
+                    {userData.email}
+                  </span>
 
                   <div className="flex md:hidden cursor-pointer rounded-md border border-white/15 px-3 py-1.5 text-xs text-white transition hover:bg-white/10 flex items-center gap-1 w-fit mt-1">
                     <Coins size={14} className="text-yellow-600" />
@@ -87,6 +101,12 @@ function Navbar({ OnGetStarted, userData, onprofileclick, openprofile }) {
                   <div className="flex md:hidden rounded-md justify-center py-2 text-xs text-zinc-400 transition hover:text-white">
                     Pricing
                   </div>
+                  <button
+                    onClick={onLogoutClick}
+                    className="rounded-md border border-white/15 px-3 py-1.5 text-xs text-white transition bg-red-500 hover:bg-red-600 hover:text-white active:scale-95"
+                  >
+                    Logout
+                  </button>
                 </div>
               )}
             </div>
@@ -97,9 +117,14 @@ function Navbar({ OnGetStarted, userData, onprofileclick, openprofile }) {
   );
 }
 
-function Hero({ OnGetStarted }) {
+function Hero({ OnGetStarted, setOpenprofile }) {
   return (
-    <section className="mx-auto flex max-w-3xl flex-col items-center px-6 pt-24 text-center sm:pt-32">
+    <section
+      onClick={() => {
+        setOpenprofile(false);
+      }}
+      className="mx-auto flex max-w-3xl flex-col items-center px-6 pt-24 text-center sm:pt-32"
+    >
       <h1 className="text-5xl font-bold leading-[1.1] tracking-tight text-white sm:text-6xl">
         Build Stunning Websites
         <span className="block bg-gradient-to-r from-purple-400 via-violet-400 to-blue-400 bg-clip-text text-transparent">
@@ -142,10 +167,24 @@ function Features() {
 }
 
 export default function HomePage() {
+  const dispatch = useDispatch();
+
   const [open, setOpen] = useState(false);
   const [openprofile, setOpenprofile] = useState(false);
 
   const { userData } = useSelector((state) => state.user);
+
+  const onLogoutClick = async () => {
+    console.log("logout click");
+    try {
+      await axios.get(`${serverUrl}/api/auth/logout`, {
+        withCredentials: true,
+      });
+      dispatch(setUserData(null));
+    } catch (error) {
+      console.log(`logout error ${error}`);
+    }
+  };
 
   return (
     <>
@@ -159,9 +198,11 @@ export default function HomePage() {
           onprofileclick={() => {
             setOpenprofile((prev) => !prev);
           }}
+          onLogoutClick={onLogoutClick}
         />
         <main>
           <Hero
+            setOpenprofile={setOpenprofile}
             OnGetStarted={() => {
               setOpen(true);
             }}

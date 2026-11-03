@@ -46,6 +46,7 @@ export default function AuthModal({ open, onclose }) {
         { withCredentials: true },
       );
       dispatch(setUserData(data));
+      onclose();
     } catch (error) {
       console.log(error);
     }
