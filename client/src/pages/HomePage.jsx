@@ -1,11 +1,12 @@
+import axios from "axios";
 import { motion } from "motion/react";
 import { useState } from "react";
 import AuthModal from "../components/GoogleAuthForm.jsx";
 import { useDispatch, useSelector } from "react-redux";
 import { Coins } from "lucide-react";
-import axios from "axios";
 import { serverUrl } from "../App.jsx";
 import { setUserData } from "../Redux/userSlice.js";
+import { useNavigate } from "react-router-dom";
 
 const features = [
   {
@@ -28,6 +29,7 @@ function Navbar({
   onprofileclick,
   openprofile,
   onLogoutClick,
+  navigate,
 }) {
   return (
     <motion.div
@@ -102,6 +104,12 @@ function Navbar({
                     Pricing
                   </div>
                   <button
+                    onClick={() => navigate("/dashboard")}
+                    className="rounded-md border border-white/15 px-3 py-1.5 text-xs text-white transition bg-red-500 hover:bg-red-600 hover:text-white active:scale-95"
+                  >
+                    Go to Dashboard
+                  </button>
+                  <button
                     onClick={onLogoutClick}
                     className="rounded-md border border-white/15 px-3 py-1.5 text-xs text-white transition bg-red-500 hover:bg-red-600 hover:text-white active:scale-95"
                   >
@@ -117,7 +125,7 @@ function Navbar({
   );
 }
 
-function Hero({ OnGetStarted, setOpenprofile }) {
+function Hero({ OnGetStarted, setOpenprofile, navigate, userData }) {
   return (
     <section
       onClick={() => {
@@ -138,10 +146,10 @@ function Hero({ OnGetStarted, setOpenprofile }) {
       </p>
 
       <button
-        onClick={OnGetStarted}
+        onClick={userData ? () => navigate("/dashboard") : OnGetStarted}
         className="mt-8 rounded-lg bg-white px-6 py-2.5 text-xs font-semibold text-black shadow-lg shadow-white/5 transition hover:bg-zinc-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black active:scale-110 cursor-pointer"
       >
-        Get Started
+        {userData ? "Go to Dashboard" : "Get Started"}
       </button>
     </section>
   );
@@ -167,6 +175,7 @@ function Features() {
 }
 
 export default function HomePage() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const [open, setOpen] = useState(false);
@@ -190,6 +199,7 @@ export default function HomePage() {
     <>
       <div className="min-h-screen bg-black font-sans text-white antialiased">
         <Navbar
+          navigate={navigate}
           OnGetStarted={() => {
             setOpen(true);
           }}
@@ -202,6 +212,7 @@ export default function HomePage() {
         />
         <main>
           <Hero
+            navigate={navigate}
             setOpenprofile={setOpenprofile}
             OnGetStarted={() => {
               setOpen(true);
